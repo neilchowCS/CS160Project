@@ -5,6 +5,10 @@ const { connectDB } = require('./db');
 const app = express();
 app.use(express.json());
 
+// setup router for userAccount endpoints
+const userAccount = require('./routes/userAccount');
+app.use('/userAccount', userAccount);
+
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 const port = process.env.PORT || 5000;
