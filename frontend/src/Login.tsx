@@ -42,7 +42,7 @@ export default function Login() {
                             id="password"
                             type="password"
                             required
-                            placeholder="••••••••"
+                            placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="text-black rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -58,7 +58,7 @@ export default function Login() {
                 </form>
 
                 <p className="mt-4 text-center text-sm text-gray-500">
-                    Don’t have an account? <a href="#" className="text-emerald-600 hover:underline">Sign up</a>
+                    Don't have an account? <a href="#" className="text-emerald-600 hover:underline">Sign up</a>
                 </p>
             </div>
         </div>
