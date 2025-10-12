@@ -8,8 +8,6 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: () => new Date() },
 }, { versionKey: false });
 
-userSchema.index({ email: 1 }, { unique: true });
-
 const User = mongoose.model('User', userSchema);
 
 module.exports = { User };
