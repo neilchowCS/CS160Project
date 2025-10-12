@@ -7,7 +7,7 @@ app.use(express.json());
 
 // setup router for userAccount endpoints
 const userAccount = require('./routes/userAccount');
-app.use('/userAccount', userAccount);
+app.use('/api/userAccount', userAccount);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
