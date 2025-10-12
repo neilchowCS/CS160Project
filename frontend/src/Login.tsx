@@ -43,7 +43,11 @@ export default function Login() {
                             id="password"
                             type="password"
                             required
+<<<<<<< HEAD
                             placeholder="��������"
+=======
+                            placeholder="Enter your password"
+>>>>>>> ef1e900 (fixed placeholder symbols in login frontend)
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="text-black rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -59,7 +63,11 @@ export default function Login() {
                 </form>
 
                 <p className="mt-4 text-center text-sm text-gray-500">
+<<<<<<< HEAD
                     Don't have an account? <Link to="/register" className="text-emerald-600 hover:underline">Sign up</Link>
+=======
+                    Don't have an account? <a href="#" className="text-emerald-600 hover:underline">Sign up</a>
+>>>>>>> ef1e900 (fixed placeholder symbols in login frontend)
                 </p>
             </div>
         </div>
