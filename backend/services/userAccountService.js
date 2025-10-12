@@ -1,13 +1,24 @@
-// All business logic for userAccount endpoints goes here
+const { User } = require('../models/User');
 
-function registerUser(body) {
-    // check if account already exists
-
+async function registerUser(body) {
     // register new account
+    try {
+        const user = new User({
+            firstName: body.first_name,
+            lastName: body.last_name,
+            email: body.email,
+            passwordHash: body.password,
+            hashSalt: "temporary-salt-value"
+        });
+        await user.save();
+        return [201, "User registered successfully"];
+    } catch (err) {
+        if (err.code === 11000) {
+            return [409, `Error: Email '${body.email}' already exists`];
+        }
+        return [400, "Error: " + err.message];
+    }
 
-
-    
-    return [200, "New account successfully created"];
 }
 
 module.exports = {
