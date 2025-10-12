@@ -1,9 +1,17 @@
-// src/App.tsx
 import React from "react";
-import CarbonTrackUI from "./CarbonTrackUI"; // make sure this file exists in src/
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import CarbonTrackUI from "./CarbonTrackUI";
+import Login from "./Login";
 
 function App() {
-  return <CarbonTrackUI />;
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<CarbonTrackUI />} />
+                <Route path="/login" element={<Login />} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
