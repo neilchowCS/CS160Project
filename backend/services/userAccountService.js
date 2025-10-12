@@ -1,4 +1,5 @@
 const { User } = require('../models/User');
+const bcrypt = require('bcrypt');
 
 async function registerUser(body) {
     // register new account
@@ -7,8 +8,7 @@ async function registerUser(body) {
             firstName: body.first_name,
             lastName: body.last_name,
             email: body.email,
-            passwordHash: body.password,
-            hashSalt: "temporary-salt-value"
+            passwordHash: await bcrypt.hash(body.password, 12) // generate password hash with embedded salt
         });
         await user.save();
         return [201, "User registered successfully"];

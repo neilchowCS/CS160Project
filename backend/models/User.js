@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, index: true },
   passwordHash: { type: String, required: true },
-  hashSalt: { type: String, required: true },
   createdAt: { type: Date, default: () => new Date() },
 }, { versionKey: false });
 
