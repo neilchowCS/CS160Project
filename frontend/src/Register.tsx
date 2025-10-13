@@ -12,6 +12,7 @@ export default function Register() {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
+
         if (!name.trim() || !email.trim() || !password) {
             setError("Please fill out all required fields.");
             return;
@@ -21,16 +22,40 @@ export default function Register() {
             return;
         }
         if (password.length < 6) {
-            setError("Password should be at least 6 characters.");
-            return;
+            setError("Password must be at least 6 characters long.");
+        return;
         }
 
-        // Frontend-only demo: normally you'd POST to /api/register
-        console.log("Registering:", { name, email });
-        alert(`Registered ${name} (${email}) -- demo only`);
-        // Redirect to login page after "registration"
-        navigate("/login");
-    }
+
+        const parts = name.trim().split(/\s+/);
+        const first_name = parts[0] || "";
+        const last_name = parts.slice(1).join(" ") || parts[0] || "";
+
+        const base = import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "";
+        fetch(`${base}/api/userAccount/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+            first_name,
+            last_name,
+            email: email.trim(),
+            password,
+            repeat_password: password
+            }),
+        })
+            .then(async (r) => {
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) {
+                const msg = typeof data === "string" ? data : (data.error || "Registration failed.");
+                throw new Error(msg);
+            }
+            navigate("/login");
+            })
+            .catch((err: any) => {
+            setError(String(err.message || err) || "Registration failed.");
+            });
+        }
+
 
     return (
         <div className="flex min-h-screen w-screen items-center justify-center bg-gray-50">
