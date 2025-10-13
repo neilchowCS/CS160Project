@@ -93,18 +93,18 @@ export default function CarbonTrackUI() {
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <aside
-          className={`$${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
+          className={`${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
         >
           <nav className="flex flex-col gap-2">
             {(["Dashboard", "Logs", "Tips"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActive(tab)}
-                className={`rounded-xl px-3 py-2 text-left text-sm transition ${
-                  active === tab
-                    ? "bg-emerald-600 text-white shadow"
-                    : "hover:bg-gray-100"
-                }`}
+                className={`rounded-xl px-3 py-2 text-left text-sm font-medium transition
+                  ${active === tab
+                    ? "bg-emerald-600 text-white shadow border border-emerald-600"
+                    : "bg-white text-gray-800 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
               >
                 {tab}
               </button>
