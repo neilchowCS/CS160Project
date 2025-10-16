@@ -1,15 +1,47 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        // Here you'd call your backend login API or validation logic
+
         console.log("Logging in with:", { email, password });
-        alert(`Email: ${email}\nPassword: ${password}`);
+        const base = import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "";
+        
+        try {
+        const res = await fetch(`${base}/api/userAccount/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email.trim(),
+                password,
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(typeof data === "string" ? data : data.error || "Login failed");
+        }
+
+        const token = data.token;
+        if (!token) {
+            throw new Error("No token received from server");
+        }
+
+        localStorage.setItem("jwt", token);
+        alert("JWT token:\n" + token);
+
+        window.location.href = "/";
+
+
+        } catch (err: any) {
+            setError(String(err.message || err) || "Login failed");
+        }
     }
 
     return (
@@ -18,6 +50,12 @@ export default function Login() {
                 <h1 className="mb-6 text-center text-2xl font-semibold text-gray-900">
                     Sign in to CarbonTrack
                 </h1>
+
+                {error && (
+                    <div className="mb-4 rounded-lg bg-red-100 p-3 text-red-700 text-sm border border-red-300">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                     <div className="grid gap-1">

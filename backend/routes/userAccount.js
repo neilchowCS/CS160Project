@@ -6,12 +6,12 @@ const userAccountService = require('../services/userAccountService'); // busines
 
 
 // GET endpoint for testing
-module.exports = app.get('/', (req, res)=>{
+app.get('/', (req, res)=>{
     res.status(200).send('Test GET request from userAccount.js file');
 });
 
 // POST endpoint for registering a user account
-module.exports = app.post('/register', async (req, res)=> {
+app.post('/register', async (req, res)=> {
     // validate schema
     const { error, value } = userAccountValidation.registrationSchema.validate(req.body);
     if (error) {
@@ -21,3 +21,15 @@ module.exports = app.post('/register', async (req, res)=> {
     
     return res.status(status).json(response);
 });
+
+app.post('/login', async (req, res) => {
+    const { error, value } = userAccountValidation.loginSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: "Invalid request schema: " + error.details[0].message });
+    }
+
+    const [status, response] = await userAccountService.loginUser(req.body);
+    return res.status(status).json(response);
+});
+
+module.exports = app;
