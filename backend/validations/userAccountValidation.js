@@ -28,6 +28,13 @@ const registrationSchema = Joi.object({
         .messages({ 'any.only': 'repeat_password must match password' }),
 }).required();
 
+const loginSchema = Joi.object({email: Joi.string().email().required(), password: Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        .required()
+    }).required();
+
 module.exports = {
     registrationSchema,
+    loginSchema
 }
+
