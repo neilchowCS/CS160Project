@@ -7,7 +7,9 @@ const base = {
 
   amount:   Joi.number().allow(null).optional(),
 
-  transportMode:     Joi.string().valid('car','bus','train','subway','rideshare','bike','walk','e-scooter','other').allow(null),
+  transportMode: Joi.string()
+  .valid('car','bus','train','subway','rideshare','bike','walk','e-scooter','other')
+  .allow(null),
   transportDistance: Joi.number().allow(null),
 };
 

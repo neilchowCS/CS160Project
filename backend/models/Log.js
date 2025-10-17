@@ -9,7 +9,12 @@ const logSchema = new mongoose.Schema({
 
   amount:   { type: Number, default: null },
 
-  transportMode:     { type: String, enum: ['car','bus','train','subway','rideshare','bike','walk','e-scooter','other'], default: null },
+  transportMode: { 
+  type: String, 
+  enum: ['car','bus','train','subway','rideshare','bike','walk','e-scooter','other'], 
+  default: null 
+},
+
   transportDistance: { type: Number, default: null }, // kilometers or miles (your choice)
 }, { timestamps: true });
 

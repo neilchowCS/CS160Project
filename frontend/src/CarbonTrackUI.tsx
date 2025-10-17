@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-const getToken = () => localStorage.getItem("token") || "";
+const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const getToken = () => localStorage.getItem("jwt") || "";
 
 // ---- Types ----
 type LogItem = {
