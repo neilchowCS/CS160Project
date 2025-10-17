@@ -11,6 +11,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
+app.use('/api/logs', require('./routes/logs'));
 
 // setup router for userAccount endpoints
 const userAccount = require('./routes/userAccount');
