@@ -361,7 +361,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
 
 function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [category, setCategory] = useState<LogItem["category"]>("Electricity");
+  const [category, setCategory] = useState<LogItem["category"]>("Transportation");
   const [notes, setNotes] = useState("");
   // removed amount input
   const [transportMode, setTransportMode] = useState<LogItem["transportMode"]>(null);
@@ -437,7 +437,7 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
           </div>
 
           <div className="grid gap-1">
-            <label className="text-xs text-gray-600">Distance Traveled</label>
+            <label className="text-xs text-gray-600">Miles Traveled</label>
             <input
               type="number"
               step="0.1"
