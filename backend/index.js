@@ -17,6 +17,8 @@ app.use('/api/logs', require('./routes/logs'));
 const userAccount = require('./routes/userAccount');
 app.use('/api/userAccount', userAccount);
 
+app.use('/api/challenges', require('./routes/challenges'));
+
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 const port = process.env.PORT || 5000;

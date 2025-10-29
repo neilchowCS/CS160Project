@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { ECO_TIPS, ECO_CHALLENGES } from "./data/ecoTips";
 import {
     ResponsiveContainer,
     LineChart,
@@ -39,11 +40,26 @@ const CATEGORIES: LogItem["category"][] = [
 
 export default function CarbonTrackUI() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips">("Dashboard");
+    const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges">("Dashboard");
     const [logs, setLogs] = useState<LogItem[]>([]);
     const [query, setQuery] = useState("");
     const [catFilter, setCatFilter] = useState<"All" | LogItem["category"]>("All");
     const [modalOpen, setModalOpen] = useState(false);
+    const [challengeStatus, setChallengeStatus] = useState<{count: number; completedToday: boolean} | null>(null);
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(`${API}/api/challenges/status`, {
+                    headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            if (res.ok) {
+                const j = await res.json();
+                setChallengeStatus({ count: j.challengeCount || 0, completedToday: !!j.completedToday });
+            }
+            } catch {}
+        })();
+    }, []);
+
     useEffect(() => {
         (async () => {
             try {
@@ -67,6 +83,25 @@ export default function CarbonTrackUI() {
             }
         })();
     }, []);
+
+    async function completeToday() {
+        try {
+            const res = await fetch(`${API}/api/challenges/complete`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            const j = await res.json();
+            if (res.ok) {
+            setChallengeStatus({ count: j.challengeCount || 0, completedToday: !!j.completedToday });
+            alert(j.message || "Challenge completed!");
+            } else {
+            alert(j.error || "Could not complete challenge");
+            }
+        } catch {
+            alert("Network error");
+        }
+    }
+
 
     const totals = useMemo(() => {
         const total = logs.reduce((s, l) => s + (l.amount ?? 0), 0);
@@ -138,7 +173,7 @@ export default function CarbonTrackUI() {
                     className={`${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
                 >
                     <nav className="flex flex-col gap-2">
-                        {(["Dashboard", "Logs", "Tips"] as const).map((tab) => (
+                        {(["Dashboard", "Logs", "Tips & Challenges"] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActive(tab)}
@@ -273,36 +308,89 @@ export default function CarbonTrackUI() {
                         </section>
                     )}
 
-                    {active === "Tips" && (
-                        <section className="space-y-4">
-                            <h1 className="text-2xl font-semibold">Tips</h1>
+                    {active === "Tips & Challenges" && (
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between gap-3">
+                            <h1 className="text-2xl font-semibold">Tips & Challenges</h1>
+                            <div className="text-sm text-gray-600">
+                                Completed: <span className="font-semibold">{challengeStatus?.count ?? 0}</span>
+                            </div>
+                            </div>
+
+                            {/* Challenge of the Day card */}
+                            <div className="rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-white p-0 shadow-sm">
+                            <div className="flex items-center justify-between rounded-t-2xl border-b border-emerald-100/70 bg-emerald-100/60 px-4 py-2">
+                                <div className="text-xs font-semibold tracking-wide text-emerald-900/80">CHALLENGE OF THE DAY</div>
+                                <div className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-xs text-emerald-700 ring-1 ring-emerald-200/70">
+                                <span className="opacity-80">Completed:</span>
+                                <span className="font-semibold">{challengeStatus?.count ?? 0}</span>
+                                </div>
+                            </div>
+                            <div className="px-4 py-4">
+                                {(() => {
+                                const idx = new Date().getDate() % ECO_CHALLENGES.length;
+                                const c = ECO_CHALLENGES[idx];
+                                return (
+                                    <>
+                                    <div className="flex items-start gap-3">
+                                        <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white shadow-sm">🏆</div>
+                                        <div>
+                                        <div className="text-lg font-semibold text-emerald-900">{c.title}</div>
+                                        <div className="mt-1 text-sm text-emerald-800/80">{c.desc}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                                        <label className="inline-flex select-none items-center gap-2 text-sm text-emerald-900/90">
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+                                            checked={!!challengeStatus?.completedToday}
+                                            onChange={completeToday}
+                                            disabled={!!challengeStatus?.completedToday}
+                                        />
+                                        {challengeStatus?.completedToday ? "Completed today" : "Mark as completed"}
+                                        </label>
+
+                                        <button
+                                        onClick={completeToday}
+                                        disabled={!!challengeStatus?.completedToday}
+                                        className={[
+                                            "rounded-2xl px-4 py-1.5 text-sm shadow-sm transition",
+                                            challengeStatus?.completedToday
+                                            ? "bg-gray-100 text-gray-500"
+                                            : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.99]"
+                                        ].join(" ")}
+                                        >
+                                        {challengeStatus?.completedToday ? "Done" : "Complete"}
+                                        </button>
+
+                                        {challengeStatus?.completedToday && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+                                            ✓ Saved to your account
+                                        </span>
+                                        )}
+                                    </div>
+                                    </>
+                                );
+                                })()}
+                            </div>
+                            </div>
+
+                            {/* Eco Tips Grid */}
+                            <div>
+                            <h2 className="text-lg font-semibold mb-2">Eco Tips</h2>
                             <ul className="grid gap-3 md:grid-cols-2">
-                                {[
-                                    {
-                                        t: "Electricity",
-                                        d: "Switch to LED bulbs and enable device sleep settings; batch your laundry + cold washes.",
-                                    },
-                                    {
-                                        t: "Natural Gas",
-                                        d: "Lower water heater temperature slightly and insulate hot-water pipes.",
-                                    },
-                                    {
-                                        t: "Transportation",
-                                        d: "Combine errands, pick transit for <5mi trips, and maintain proper tire pressure.",
-                                    },
-                                    {
-                                        t: "Other",
-                                        d: "Reduce food waste, choose lower-impact meals 2–3×/week, and compost organics.",
-                                    },
-                                ].map((x) => (
-                                    <li key={x.t} className="rounded-2xl border bg-white p-4 shadow-sm">
-                                        <div className="text-sm text-gray-500">{x.t}</div>
-                                        <div className="mt-1 font-medium">{x.d}</div>
-                                    </li>
+                                {ECO_TIPS.map((tip, i) => (
+                                <li key={i} className="rounded-2xl border bg-white p-4 shadow-sm">
+                                    <div className="mt-1 font-medium">{tip}</div>
+                                </li>
                                 ))}
                             </ul>
+                            </div>
                         </section>
-                    )}
+                        )}
+
                 </main>
             </div>
 
