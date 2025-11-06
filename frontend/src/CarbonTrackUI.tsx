@@ -10,7 +10,7 @@ import {
     Tooltip
 } from 'recharts';
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const API = import.meta.env.VITE_API_BASE || "http://localhost:5001";
 const getToken = () => localStorage.getItem("jwt") || "";
 
 // ---- Types ----

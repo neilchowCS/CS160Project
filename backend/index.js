@@ -21,7 +21,7 @@ app.use('/api/challenges', require('./routes/challenges'));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 connectDB().then(() => {
   app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
