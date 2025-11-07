@@ -7,15 +7,19 @@ const logSchema = new mongoose.Schema({
   notes:    { type: String, default: '' },
   date:     { type: Date, required: true },
 
-  amount:   { type: Number, default: null },
+  amount:   { type: Number },
 
   transportMode: { 
-  type: String, 
-  enum: ['car','bus','train','subway','rideshare','bike','walk','e-scooter','other'], 
-  default: null 
-},
+    type: String, 
+    enum: ['car','bus','train','subway','rideshare','bike','walk','e-scooter','other'], 
+  },
 
-  transportDistance: { type: Number, default: null }, // kilometers or miles (your choice)
+  transportDistance: { type: Number }, // miles
+  electricityCategory: {
+    type: String,
+    enum: ['light', 'device'],
+  },
+  electricityDuration: { type: Number }, // hours
 }, { timestamps: true });
 
 module.exports = mongoose.model('Log', logSchema);

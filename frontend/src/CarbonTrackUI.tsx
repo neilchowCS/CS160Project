@@ -501,6 +501,8 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
     // removed amount input
     const [transportMode, setTransportMode] = useState<LogItem["transportMode"]>(null);
     const [transportDistance, setTransportDistance] = useState<string>("");
+    const [electricityCategory, setelectricityCategory] = useState<string | null>(null);
+    const [electricityDuration, setelectricityDuration] = useState<string>("");
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -514,6 +516,19 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
             payload.transportDistance = Number(transportDistance);
         }
 
+        if (category === "Electricity") {
+            // electricityCategory is selected from dropdown (light/device)
+            if (!electricityCategory) return; // require selection
+
+            // parse hours input (required for the selected electricity type)
+            const hrs = electricityDuration === "" ? null : Number(electricityDuration);
+            if (hrs == null || Number.isNaN(hrs)) return;
+
+            // match backend validation fields
+            payload.electricityCategory = electricityCategory;
+            payload.electricityDuration = hrs;
+        }
+        console.log(payload);
         onSubmit(payload);
     }
 
@@ -540,6 +555,10 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
                         if (v !== "Transportation") {
                             setTransportMode(null);
                             setTransportDistance("");
+                        }
+                        if (v !== "Electricity") {
+                            setelectricityCategory(null);
+                            setelectricityDuration("");
                         }
                     }}
                 >
@@ -586,6 +605,35 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
                 </>
             )}
 
+            {category === "Electricity" && (
+                <>
+                    <div className="grid gap-1">
+                        <label className="text-xs text-gray-600">Electricity Type</label>
+                        <select
+                            className="rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            value={electricityCategory ?? ""}
+                            onChange={(e) => setelectricityCategory((e.target.value || null) as any)}
+                        >
+                            <option value="">Select type…</option>
+                            <option value="light">Light</option>
+                            <option value="device">Device</option>
+                        </select>
+                    </div>
+
+                    <div className="grid gap-1">
+                        <label className="text-xs text-gray-600">Hours used</label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            placeholder="e.g., 5.0"
+                            className="rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            value={electricityDuration}
+                            onChange={(e) => setelectricityDuration(e.target.value)}
+                        />
+                    </div>
+                </>
+            )}
+
             <div className="grid gap-1">
                 <label className="text-xs text-gray-600">Notes (optional)</label>
                 <input
@@ -605,6 +653,8 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
                         setNotes("");
                         setTransportMode(null);
                         setTransportDistance("");
+                        setelectricityCategory(null);
+                        setelectricityDuration("");
                     }}
                     className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
                 >

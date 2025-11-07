@@ -1,7 +1,7 @@
 const Log = require('../models/Log');
 
-function footprintCalc(mode, distance) {
-  // emission factors in kg CO2e per mile (example values)
+function transportationFootprintCalc(mode, distance) {
+  // emission factors in kg CO2e per mile
   const CAR = 0.21;
   const RIDESHARE = 0.29;
   const BUS = 0.12;
@@ -11,7 +11,7 @@ function footprintCalc(mode, distance) {
 
   if (!mode || distance == null) return 0;
   const dist = Number(distance);
-  if (Number.isNaN(dist) || dist < 0) return 0;
+  if (Number.isNaN(dist) || dist <= 0) return 0;
 
   let factor;
   switch (mode) {
@@ -42,13 +42,38 @@ function footprintCalc(mode, distance) {
   return factor * dist;
 }
 
+function electricityFootprintCalc(mode, hours) {
+  // emission factors in kg CO2e per hour
+  const LIGHT = 0.02;
+  const DEVICE = 0.05;
+
+  if (!mode || hours == null) return 0;
+  const hrs = Number(hours);
+  if (Number.isNaN(hrs) || hrs <= 0 ) return 0;
+  let factor;
+  switch (mode) {
+    case 'device':
+      factor = DEVICE;
+      break;
+    case 'light':
+      factor = LIGHT;
+      break;
+  }
+  return factor * hrs;
+}
+
 async function createLog(userId, body) {
   const { category } = body;
   const docBody = { userId, ...body };
   let footprint = 0
   if (category === 'Transportation') {
     const { transportMode, transportDistance } = body;
-    footprint = footprintCalc(transportMode, transportDistance);
+    footprint = transportationFootprintCalc(transportMode, transportDistance);
+    docBody.amount = footprint;
+  }
+  else if (category === 'Electricity') {
+    const { electricityCategory, electricityDuration } = body;
+    footprint = electricityFootprintCalc(electricityCategory, electricityDuration);
     docBody.amount = footprint;
   }
   const doc = await Log.create(docBody);
