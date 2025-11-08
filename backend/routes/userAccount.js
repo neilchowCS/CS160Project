@@ -10,6 +10,31 @@ app.get('/', (req, res)=>{
     res.status(200).send('Test GET request from userAccount.js file');
 });
 
+// GET /profile endpoint - returns authenticated user's profile info
+app.get('/profile', async (req, res) => {
+    try {
+        const auth = req.get('Authorization') || req.get('authorization');
+        if (!auth) return res.status(401).json({ error: 'No Authorization header provided' });
+
+        const token = auth.replace(/^[Bb]earer\s+/, '');
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const { User } = require('../models/User');
+        const user = await User.findById(decoded.userId).lean();
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // return fields in snake_case to match frontend expectations
+        return res.json({
+            first_name: user.firstName,
+            last_name: user.lastName,
+            email: user.email,
+            createdAt: user.createdAt,
+        });
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid token or request: ' + err.message });
+    }
+});
+
 // POST endpoint for registering a user account
 app.post('/register', async (req, res)=> {
     // validate schema
