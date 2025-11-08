@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { ECO_TIPS, ECO_CHALLENGES } from "./data/ecoTips";
+import { Link } from "react-router-dom";
 import {
     ResponsiveContainer,
     LineChart,
@@ -162,7 +163,14 @@ export default function CarbonTrackUI() {
                             onChange={(e) => setQuery(e.target.value)}
                         />
                         <button className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-100">Help</button>
-                        <div className="h-8 w-8 rounded-full bg-emerald-600/10 ring-2 ring-emerald-600" />
+                        <Link
+                            to="/profile"
+                            className="h-8 w-8 rounded-full bg-emerald-600/10 ring-2 ring-emerald-600 grid place-items-center cursor-pointer hover:ring-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+                            title="Open profile"
+                            aria-label="Open profile"
+                        >
+                        </Link>
+
                     </div>
                 </div>
             </header>
