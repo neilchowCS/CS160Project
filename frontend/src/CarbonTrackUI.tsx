@@ -167,7 +167,6 @@ export default function CarbonTrackUI() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            {/* if you added /help route, this can be <Link to="/help" ...>Help</Link> */}
             <Link
               to="/help"
               className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-100"
@@ -251,7 +250,7 @@ export default function CarbonTrackUI() {
                       />
                                             <YAxis
                                                 tick={{ fontSize: 12 }}
-                                                domain={['auto', 'auto']} // auto-adjusts axis range
+                                                domain={['auto', 'auto']}
                                             />
                       <Tooltip
                         formatter={(value: number) => value.toLocaleString()}
@@ -435,7 +434,7 @@ export default function CarbonTrackUI() {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                                        Authorization: `Bearer ${getToken()}`, // dev shim ignores this
+                    Authorization: `Bearer ${getToken()}`,
                   },
                   body: JSON.stringify(payload),
                 });
@@ -602,7 +601,6 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [category, setCategory] = useState<LogItem["category"]>("Transportation");
   const [notes, setNotes] = useState("");
-  // removed amount input
     const [transportMode, setTransportMode] = useState<LogItem["transportMode"]>(null);
   const [transportDistance, setTransportDistance] = useState<string>("");
     const [electricityCategory, setelectricityCategory] = useState<string | null>(null);
