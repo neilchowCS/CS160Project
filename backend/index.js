@@ -18,6 +18,7 @@ const userAccount = require('./routes/userAccount');
 app.use('/api/userAccount', userAccount);
 
 app.use('/api/challenges', require('./routes/challenges'));
+app.use('/api/leaderboard', require('./routes/leaderboard'));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

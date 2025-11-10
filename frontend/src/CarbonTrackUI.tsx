@@ -41,7 +41,7 @@ const CATEGORIES: LogItem["category"][] = [
 
 export default function CarbonTrackUI() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges">("Dashboard");
+  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Leaderboard">("Dashboard");
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [query, setQuery] = useState("");
   const [catFilter, setCatFilter] = useState<"All" | LogItem["category"]>("All");
@@ -188,13 +188,13 @@ export default function CarbonTrackUI() {
         {/* Sidebar */}
         <aside
                     className={`${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
-        >
-          <nav className="flex flex-col gap-2">
-                        {(["Dashboard", "Logs", "Tips & Challenges"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActive(tab)}
-                  className={`rounded-xl px-3 py-2 text-left text-sm font-medium transition
+                >
+                    <nav className="flex flex-col gap-2">
+                        {(["Dashboard", "Logs", "Tips & Challenges", "Leaderboard"] as const).map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActive(tab)}
+                                className={`rounded-xl px-3 py-2 text-left text-sm font-medium transition
                   ${active === tab
                       ? "bg-emerald-600 text-white shadow border border-emerald-600"
                       : "bg-white text-gray-800 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
@@ -409,8 +409,21 @@ export default function CarbonTrackUI() {
             </section>
           )}
 
-        </main>
-      </div>
+                        {active === "Leaderboard" && (
+                            <section className="space-y-6">
+                                <div className="flex items-center justify-between gap-3">
+                                    <h1 className="text-2xl font-semibold">Leaderboard</h1>
+                                    <p className="text-sm text-gray-600">Compare your impact with others</p>
+                                </div>
+
+                                <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                                    <Leaderboard />
+                                </div>
+                            </section>
+                        )}
+
+                </main>
+            </div>
 
             {/* Modal */}
       {modalOpen && (
@@ -753,3 +766,64 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
     </form>
   );
 }
+
+function Leaderboard() {
+    const [leaders, setLeaders] = useState<
+        { username: string; avgEmissions: number; rank: number }[]
+    >([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(`${API}/api/leaderboard`, {
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                });
+                if (!res.ok) throw new Error("Failed to fetch leaderboard");
+                const data = await res.json();
+                const sorted = data
+                    .sort((a: any, b: any) => a.avgEmissions - b.avgEmissions)
+                    .map((u: any, i: number) => ({ ...u, rank: i + 1 }));
+                setLeaders(sorted);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, []);
+
+    if (loading) return <div className="text-sm text-gray-500">Loading leaderboard…</div>;
+    if (!leaders.length) return <div className="text-sm text-gray-500">No data available.</div>;
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+                <thead>
+                    <tr className="border-b bg-gray-50 text-left">
+                        <th className="p-2 font-medium w-12 text-center">Rank</th>
+                        <th className="p-2 font-medium">User</th>
+                        <th className="p-2 font-medium text-right">Average CO₂e (kg) per day (Last 30 days)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {leaders.map((u) => (
+                        <tr
+                            key={u.username}
+                            className={`border-b last:border-0 ${
+                                u.rank <= 3 ? "bg-emerald-50/50" : ""
+                            }`}
+                        >
+                            <td className="p-2 text-center font-semibold text-emerald-700">
+                                {u.rank === 1 ? "🥇" : u.rank === 2 ? "🥈" : u.rank === 3 ? "🥉" : u.rank}
+                            </td>
+                            <td className="p-2">{u.username}</td>
+                            <td className="p-2 text-right">{fmt(u.avgEmissions)}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
