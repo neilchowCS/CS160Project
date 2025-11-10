@@ -3,6 +3,22 @@ const app = express();
 app.use(express.json())
 const userAccountValidation = require('../validations/userAccountValidation') // request validations for user account actions
 const userAccountService = require('../services/userAccountService'); // business logic for user user account actions
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { User } = require('../models/User');
+
+function auth(req, res, next) {
+  const h = req.headers.authorization || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Missing token' });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = payload.userId;
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
 
 
 // GET endpoint for testing
@@ -55,6 +71,28 @@ app.post('/login', async (req, res) => {
 
     const [status, response] = await userAccountService.loginUser(req.body);
     return res.status(status).json(response);
+});
+
+app.post('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!ok) return res.status(400).json({ error: 'Current password is incorrect' });
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    return res.json({ message: 'Password changed successfully' });
+  } catch (e) {
+    return res.status(400).json({ error: e.message || 'Unable to change password' });
+  }
 });
 
 module.exports = app;

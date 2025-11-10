@@ -34,9 +34,8 @@ export default function Login() {
         }
 
         localStorage.setItem("jwt", token);
-        alert("JWT token:\n" + token);
 
-        window.location.href = "/";
+        window.location.href = "/home";
 
 
         } catch (err: any) {

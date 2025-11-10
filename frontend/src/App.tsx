@@ -4,6 +4,7 @@ import CarbonTrackUI from "./CarbonTrackUI";
 import Login from "./Login";
 import Register from "./Register";
 import Profile from "./Profile";
+import Help from "./Help";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem('jwt') || '';
@@ -15,14 +16,21 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={
-                    <RequireAuth>
-                        <CarbonTrackUI />
-                    </RequireAuth>
+                <Route path="/" element={<Navigate to="/login" />} />
+                <Route path="/home" element={
+                <RequireAuth>
+                    <CarbonTrackUI />
+                </RequireAuth>
                 } />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/help" element={
+                        <RequireAuth>
+                        <Help />
+                        </RequireAuth>
+                    }
+                    />
             </Routes>
         </Router>
     );
