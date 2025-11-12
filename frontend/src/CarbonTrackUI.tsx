@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { ECO_TIPS, ECO_CHALLENGES } from "./data/ecoTips";
 import { Link } from "react-router-dom";
+import { FUN_FACTS } from "./data/FunFacts";
 import {
   ResponsiveContainer,
   LineChart,
@@ -41,7 +42,7 @@ const CATEGORIES: LogItem["category"][] = [
 
 export default function CarbonTrackUI() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Leaderboard">("Dashboard");
+  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Leaderboard" | "Fun Facts">("Dashboard");
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [query, setQuery] = useState("");
   const [catFilter, setCatFilter] = useState<"All" | LogItem["category"]>("All");
@@ -189,7 +190,7 @@ export default function CarbonTrackUI() {
                     className={`${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
                 >
                     <nav className="flex flex-col gap-2">
-                        {(["Dashboard", "Logs", "Tips & Challenges", "Leaderboard"] as const).map((tab) => (
+                        {(["Dashboard", "Logs", "Tips & Challenges", "Leaderboard", "Fun Facts"] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActive(tab)}
@@ -407,7 +408,27 @@ export default function CarbonTrackUI() {
               </div>
             </section>
           )}
-
+          {active === "Fun Facts" && (
+            <section className="space-y-6">
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="text-2xl font-semibold">Fun Facts</h1>
+                <span className="text-sm text-gray-600">Quick eco & footprint nuggets</span>
+              </div>
+              <div className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm">
+                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {FUN_FACTS.map((fact, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-emerald-50 bg-emerald-50/40 p-3"
+                    >
+                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white">🌿</div>
+                      <div className="text-sm leading-relaxed text-emerald-900/90">{fact}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
                         {active === "Leaderboard" && (
                             <section className="space-y-6">
                                 <div className="flex items-center justify-between gap-3">
