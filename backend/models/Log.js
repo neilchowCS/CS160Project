@@ -20,6 +20,11 @@ const logSchema = new mongoose.Schema({
     enum: ['light', 'device'],
   },
   electricityDuration: { type: Number }, // hours
+  naturalGasCategory: {
+    type: String,
+    enum: ['heating', 'water_heating', 'cooking'],
+  },
+  naturalGasDuration: { type: Number }, // hours
 }, { timestamps: true });
 
 module.exports = mongoose.model('Log', logSchema);

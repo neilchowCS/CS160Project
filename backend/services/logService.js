@@ -62,6 +62,31 @@ function electricityFootprintCalc(mode, hours) {
   return factor * hrs;
 }
 
+function naturalGasFootprintCalc(type, hours) {
+  // emission factors kg CO2e per hour
+  const HEATING = 1.85; 
+  const WATER_HEATING = 3.7;
+  const COOKING = 0.81;
+
+  if (!type || hours == null) return 0;
+  const hrs = Number(hours);
+  if (Number.isNaN(hrs) || hrs <= 0) return 0;
+
+  let factor = 0;
+  switch (type) {
+    case 'heating':
+      factor = HEATING;
+      break;
+    case 'water_heating':
+      factor = WATER_HEATING;
+      break;
+    case 'cooking':
+      factor = COOKING;
+      break;
+  }
+  return factor * hrs;
+}
+
 async function createLog(userId, body) {
   const { category } = body;
   const docBody = { userId, ...body };
@@ -74,6 +99,11 @@ async function createLog(userId, body) {
   else if (category === 'Electricity') {
     const { electricityCategory, electricityDuration } = body;
     footprint = electricityFootprintCalc(electricityCategory, electricityDuration);
+    docBody.amount = footprint;
+  }
+  else if (category === 'Natural Gas') {
+    const { naturalGasCategory, naturalGasDuration } = body;
+    footprint = naturalGasFootprintCalc(naturalGasCategory, naturalGasDuration);
     docBody.amount = footprint;
   }
   const doc = await Log.create(docBody);

@@ -24,6 +24,16 @@ const electricityFields = {
   electricityDuration: Joi.number().min(0).required(),
 };
 
+// natural-gas-only fields
+const naturalGasFields = {
+  transportMode: Joi.forbidden(),
+  transportDistance: Joi.forbidden(),
+  electricityCategory: Joi.forbidden(),
+  electricityDuration: Joi.forbidden(),
+  naturalGasCategory: Joi.string().valid('heating','water_heating','cooking').required(),
+  naturalGasDuration: Joi.number().min(0).required(),
+};
+
 // neither transport nor electricity (other categories)
 const neitherFields = {
   transportMode: Joi.forbidden(),
@@ -39,6 +49,9 @@ const createLogSchema = Joi.object(baseCommon)
   })
   .when(Joi.object({ category: Joi.valid('Electricity') }).unknown(), {
     then: Joi.object(electricityFields),
+  })
+  .when(Joi.object({ category: Joi.valid('Natural Gas') }).unknown(), {
+    then: Joi.object(naturalGasFields),
   })
   .when(Joi.object({ category: Joi.valid('Natural Gas','Other') }).unknown(), {
     then: Joi.object(neitherFields),

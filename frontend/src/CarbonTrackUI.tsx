@@ -626,6 +626,8 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
   const [transportDistance, setTransportDistance] = useState<string>("");
     const [electricityCategory, setelectricityCategory] = useState<string | null>(null);
   const [electricityDuration, setelectricityDuration] = useState<string>("");
+    const [naturalGasCategory, setNaturalGasCategory] = useState<string | null>(null);
+    const [naturalGasDuration, setNaturalGasDuration] = useState<string>("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -646,6 +648,14 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
 
       payload.electricityCategory = electricityCategory;
       payload.electricityDuration = hrs;
+    }
+    if (category === "Natural Gas") {
+      if (!naturalGasCategory) return;
+      const hrs = naturalGasDuration === "" ? null : Number(naturalGasDuration);
+      if (hrs == null || Number.isNaN(hrs)) return;
+
+      payload.naturalGasCategory = naturalGasCategory;
+      payload.naturalGasDuration = hrs;
     }
 
     onSubmit(payload);
@@ -678,6 +688,10 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
             if (v !== "Electricity") {
               setelectricityCategory(null);
               setelectricityDuration("");
+            }
+            if (v !== "Natural Gas") {
+              setNaturalGasCategory(null);
+              setNaturalGasDuration("");
             }
           }}
         >
@@ -752,6 +766,36 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
         </>
       )}
 
+      {category === "Natural Gas" && (
+        <>
+          <div className="grid gap-1">
+            <label className="text-xs text-gray-600">Natural Gas Type</label>
+            <select
+              className="rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              value={naturalGasCategory ?? ""}
+              onChange={(e) => setNaturalGasCategory((e.target.value || null) as any)}
+            >
+              <option value="">Select type…</option>
+              <option value="heating">Heating</option>
+              <option value="water_heating">Water Heating</option>
+              <option value="cooking">Cooking</option>
+            </select>
+          </div>
+
+          <div className="grid gap-1">
+            <label className="text-xs text-gray-600">Hours used</label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="e.g., 5.0"
+              className="rounded-xl border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              value={naturalGasDuration}
+              onChange={(e) => setNaturalGasDuration(e.target.value)}
+            />
+          </div>
+        </>
+      )}
+
       <div className="grid gap-1">
         <label className="text-xs text-gray-600">Notes (optional)</label>
         <input
@@ -773,6 +817,8 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
             setTransportDistance("");
             setelectricityCategory(null);
             setelectricityDuration("");
+            setNaturalGasCategory(null);
+            setNaturalGasDuration("");
           }}
           className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50"
         >
