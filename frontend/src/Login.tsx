@@ -13,29 +13,29 @@ export default function Login() {
         const base = import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "";
         
         try {
-        const res = await fetch(`${base}/api/userAccount/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                email: email.trim(),
-                password,
-            }),
-        });
+            const res = await fetch(`${base}/api/userAccount/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: email.trim(),
+                    password,
+                }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (!res.ok) {
-            throw new Error(typeof data === "string" ? data : data.error || "Login failed");
-        }
+            if (!res.ok) {
+                throw new Error(typeof data === "string" ? data : data.error || "Login failed");
+            }
 
-        const token = data.token;
-        if (!token) {
-            throw new Error("No token received from server");
-        }
+            const token = data.token;
+            if (!token) {
+                throw new Error("No token received from server");
+            }
 
-        localStorage.setItem("jwt", token);
+            localStorage.setItem("jwt", token);
 
-        window.location.href = "/home";
+            window.location.href = "/home";
 
 
         } catch (err: any) {

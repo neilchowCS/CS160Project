@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: () => new Date() },
   challengeCount: { type: Number, default: 0 },
   lastChallengeCompletedOn: { type: Date, default: null },
+  avatarUrl: { type: String, default: null },
 }, { versionKey: false });
 
 const User = mongoose.model('User', userSchema);

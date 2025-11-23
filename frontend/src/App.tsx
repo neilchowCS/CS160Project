@@ -4,6 +4,7 @@ import CarbonTrackUI from "./CarbonTrackUI";
 import Login from "./Login";
 import Register from "./Register";
 import Profile from "./Profile";
+import EditProfile from "./EditProfile";
 import Help from "./Help";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/help" element={
                         <RequireAuth>
                         <Help />

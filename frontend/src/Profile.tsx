@@ -7,10 +7,10 @@ export default function Profile() {
     const navigate = useNavigate();
     const [showPwModal, setShowPwModal] = useState(false);
     const [challengeStatus, setChallengeStatus] = useState<{ count: number; completedToday: boolean } | null>(null);
-    const [pwForm, setPwForm] = useState({
-        cur1: "", cur2: "", new1: "", new2: ""
-    });
+    const [pwForm, setPwForm] = useState({ cur1: "", cur2: "", new1: "", new2: "" });
     const [pwSubmitting, setPwSubmitting] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     function openPwModal() {
         setPwForm({ cur1: "", cur2: "", new1: "", new2: "" });
@@ -19,7 +19,14 @@ export default function Profile() {
     function closePwModal() {
         if (!pwSubmitting) setShowPwModal(false);
     }
-
+    function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0] || null;
+        if (file) {
+            setPreviewUrl(URL.createObjectURL(file));
+        } else {
+            setPreviewUrl(null);
+        }
+    }
     async function submitChangePassword(e: React.FormEvent) {
         e.preventDefault();
         if (pwForm.cur1 !== pwForm.cur2) {
@@ -30,10 +37,8 @@ export default function Profile() {
             alert("New password entries do not match.");
             return;
         }
-
         const base = (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") || "";
         const token = localStorage.getItem("jwt") || "";
-
         setPwSubmitting(true);
         try {
             const res = await fetch(`${base}/api/userAccount/change-password`, {
@@ -47,12 +52,10 @@ export default function Profile() {
                     newPassword: pwForm.new1,
                 }),
             });
-
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data?.error || `Request failed with ${res.status}`);
             }
-
             alert("Password changed successfully.");
             setShowPwModal(false);
         } catch (err: any) {
@@ -61,59 +64,41 @@ export default function Profile() {
             setPwSubmitting(false);
         }
     }
-
-    useEffect(() => {
-        const token = localStorage.getItem("jwt");
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
-        // Ensure we always have a sensible backend base URL for debugging.
-        const base = import.meta.env.VITE_API_BASE?.replace(/\/+$/, "") || "http://localhost:5001";
-        const url = `${base}/api/userAccount/profile`;
-        console.log("Profile: fetching user from", url);
-        console.log("Profile: token present?", !!token);
-
-        fetch(url, {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        })
-            .then(async (res) => {
-                const ct = res.headers.get('content-type') || '';
-                if (!ct.includes('application/json')) {
-                    // Return raw text so we can see HTML error pages in the UI
-                    const text = await res.text();
-                    throw new Error('Non-JSON response: ' + text.slice(0, 200));
-                }
-                return res.json();
-            })
-            .then((data) => {
-                if (data.error) setError(data.error);
-                else setUser(data);
-            })
-            .catch((err) => {
-                console.error('Profile fetch error', err);
-                setError(String(err.message || err));
-            });
-    }, [navigate]);
-
     useEffect(() => {
         const token = localStorage.getItem("jwt");
         if (!token) return;
-
         const base = (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") || "";
         (async () => {
             try {
-            const res = await fetch(`${base}/api/challenges/status`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) return;
-            const j = await res.json();
-            setChallengeStatus({ count: j.challengeCount || 0, completedToday: !!j.completedToday });
+                const res = await fetch(`${base}/api/userAccount/profile`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) throw new Error("Failed to fetch profile");
+                const data = await res.json();
+                if (data.error) setError(data.error);
+                else {
+                    setUser(data);
+                    localStorage.setItem("user", JSON.stringify(data));
+                }
+            } catch (err: any) {
+                setError(String(err.message || err));
+            }
+        })();
+    }, [navigate]);
+    useEffect(() => {
+        const token = localStorage.getItem("jwt");
+        if (!token) return;
+        const base = (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") || "";
+        (async () => {
+            try {
+                const res = await fetch(`${base}/api/challenges/status`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) return;
+                const j = await res.json();
+                setChallengeStatus({ count: j.challengeCount || 0, completedToday: !!j.completedToday });
             } catch {
-            /* ignore */
+                /* ignore */
             }
         })();
     }, []);
@@ -129,9 +114,13 @@ export default function Profile() {
             <div className="w-[90vw] max-w-md rounded-2xl border bg-white p-6 shadow-sm flex flex-col items-center">
                 {/* Profile Icon */}
                 <div className="flex justify-center w-full mt-2 mb-4">
-                    <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-5xl text-emerald-600 border-4 border-emerald-200">
-                        <span role="img" aria-label="profile">👤</span>
-                    </div>
+                    {previewUrl ? (
+                        <img src={previewUrl || undefined} alt="Profile preview" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-200" />
+                    ) : (
+                        <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-5xl text-emerald-600 border-4 border-emerald-200">
+                            <span role="img" aria-label="profile">👤</span>
+                        </div>
+                    )}
                 </div>
                 <h1 className="mb-6 text-center text-2xl font-semibold text-gray-900">Your Profile</h1>
                 <div className="mb-4 w-full text-center">
@@ -148,7 +137,7 @@ export default function Profile() {
                 </div>
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3 w-full mt-6">
-                    <button className="w-full rounded-xl border border-emerald-500 text-emerald-700 py-2 font-semibold hover:bg-emerald-50 transition">Edit Profile</button>
+                    <button className="w-full rounded-xl border border-emerald-500 text-emerald-700 py-2 font-semibold hover:bg-emerald-50 transition" onClick={() => navigate("/edit-profile")}>Edit Profile</button>
                     <button
                         className="w-full rounded-xl border border-emerald-500 text-emerald-700 py-2 font-semibold hover:bg-emerald-50 transition"
                         onClick={() => navigate("/home")}
@@ -173,74 +162,84 @@ export default function Profile() {
                     {showPwModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                            <h2 className="text-lg font-semibold mb-4">Change Password</h2>
-
-                            <form onSubmit={submitChangePassword} className="space-y-3">
-                                <div>
-                                <label className="block text-sm font-medium mb-1">Current password</label>
-                                <input
-                                    type="password"
-                                    className="w-full rounded-xl border px-3 py-2"
-                                    value={pwForm.cur1}
-                                    onChange={e => setPwForm(f => ({ ...f, cur1: e.target.value }))}
-                                    required
-                                />
-                                </div>
-
-                                <div>
-                                <label className="block text-sm font-medium mb-1">Repeat current password</label>
-                                <input
-                                    type="password"
-                                    className="w-full rounded-xl border px-3 py-2"
-                                    value={pwForm.cur2}
-                                    onChange={e => setPwForm(f => ({ ...f, cur2: e.target.value }))}
-                                    required
-                                />
-                                </div>
-
-                                <div>
-                                <label className="block text-sm font-medium mb-1">New password</label>
-                                <input
-                                    type="password"
-                                    className="w-full rounded-xl border px-3 py-2"
-                                    value={pwForm.new1}
-                                    onChange={e => setPwForm(f => ({ ...f, new1: e.target.value }))}
-                                    required
-                                />
-                                </div>
-
-                                <div>
-                                <label className="block text-sm font-medium mb-1">Repeat new password</label>
-                                <input
-                                    type="password"
-                                    className="w-full rounded-xl border px-3 py-2"
-                                    value={pwForm.new2}
-                                    onChange={e => setPwForm(f => ({ ...f, new2: e.target.value }))}
-                                    required
-                                />
-                                </div>
-
-                                <div className="mt-4 flex gap-2">
-                                <button
-                                    type="button"
-                                    className="flex-1 rounded-xl border px-4 py-2 hover:bg-gray-50"
-                                    onClick={closePwModal}
-                                    disabled={pwSubmitting}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 rounded-xl bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700 disabled:opacity-60"
-                                    disabled={pwSubmitting}
-                                >
-                                    {pwSubmitting ? "Saving..." : "Save"}
-                                </button>
-                                </div>
-                            </form>
+                                <h2 className="text-lg font-semibold mb-4">Change Password</h2>
+                                <form onSubmit={submitChangePassword} className="space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Current password</label>
+                                        <input
+                                            type="password"
+                                            className="w-full rounded-xl border px-3 py-2"
+                                            value={pwForm.cur1}
+                                            onChange={e => setPwForm(f => ({ ...f, cur1: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Repeat current password</label>
+                                        <input
+                                            type="password"
+                                            className="w-full rounded-xl border px-3 py-2"
+                                            value={pwForm.cur2}
+                                            onChange={e => setPwForm(f => ({ ...f, cur2: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">New password</label>
+                                        <input
+                                            type="password"
+                                            className="w-full rounded-xl border px-3 py-2"
+                                            value={pwForm.new1}
+                                            onChange={e => setPwForm(f => ({ ...f, new1: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Repeat new password</label>
+                                        <input
+                                            type="password"
+                                            className="w-full rounded-xl border px-3 py-2"
+                                            value={pwForm.new2}
+                                            onChange={e => setPwForm(f => ({ ...f, new2: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mt-4 flex gap-2">
+                                        <button
+                                            type="button"
+                                            className="flex-1 rounded-xl border px-4 py-2 hover:bg-gray-50"
+                                            onClick={closePwModal}
+                                            disabled={pwSubmitting}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 rounded-xl bg-emerald-600 text-white px-4 py-2 font-semibold hover:bg-emerald-700 disabled:opacity-60"
+                                            disabled={pwSubmitting}
+                                        >
+                                            {pwSubmitting ? "Saving..." : "Save"}
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        )}
+                    )}
+                    {/* Edit Profile Modal */}
+                    {editOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/30" onClick={() => setEditOpen(false)} />
+                            <div className="relative z-10 w-[92vw] max-w-md rounded-2xl border bg-white p-6 shadow-xl flex flex-col items-center">
+                                <h2 className="mb-4 text-xl font-semibold">Edit Profile</h2>
+                                <label className="mb-2 font-medium">Profile Picture</label>
+                                <input type="file" accept="image/*" onChange={handlePicChange} />
+                                {previewUrl && (
+                                    <img src={previewUrl || undefined} alt="Preview" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-200 mt-2" />
+                                )}
+                                <button className="mt-4 rounded-xl bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700" onClick={() => setEditOpen(false)}>Save</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
