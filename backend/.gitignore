@@ -13,3 +13,8 @@ build/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# uploaded files
+backend/uploads/
+
+.vscode/launch.json

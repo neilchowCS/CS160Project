@@ -9,8 +9,12 @@ export default function Profile() {
     const [challengeStatus, setChallengeStatus] = useState<{ count: number; completedToday: boolean } | null>(null);
     const [pwForm, setPwForm] = useState({ cur1: "", cur2: "", new1: "", new2: "" });
     const [pwSubmitting, setPwSubmitting] = useState(false);
-    const [editOpen, setEditOpen] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const apiBase =
+    (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") || "";
+
+    const avatarSrc = user?.avatar_url ? `${apiBase}${user.avatar_url}` : null;
+
 
     function openPwModal() {
         setPwForm({ cur1: "", cur2: "", new1: "", new2: "" });
@@ -19,14 +23,7 @@ export default function Profile() {
     function closePwModal() {
         if (!pwSubmitting) setShowPwModal(false);
     }
-    function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0] || null;
-        if (file) {
-            setPreviewUrl(URL.createObjectURL(file));
-        } else {
-            setPreviewUrl(null);
-        }
-    }
+
     async function submitChangePassword(e: React.FormEvent) {
         e.preventDefault();
         if (pwForm.cur1 !== pwForm.cur2) {
@@ -114,8 +111,12 @@ export default function Profile() {
             <div className="w-[90vw] max-w-md rounded-2xl border bg-white p-6 shadow-sm flex flex-col items-center">
                 {/* Profile Icon */}
                 <div className="flex justify-center w-full mt-2 mb-4">
-                    {previewUrl ? (
-                        <img src={previewUrl || undefined} alt="Profile preview" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-200" />
+                    {avatarSrc ? (
+                        <img
+                            src={avatarSrc}
+                            alt="Profile"
+                            className="w-20 h-20 rounded-full object-cover border-4 border-emerald-200"
+                        />
                     ) : (
                         <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-5xl text-emerald-600 border-4 border-emerald-200">
                             <span role="img" aria-label="profile">👤</span>
@@ -222,21 +223,6 @@ export default function Profile() {
                                         </button>
                                     </div>
                                 </form>
-                            </div>
-                        </div>
-                    )}
-                    {/* Edit Profile Modal */}
-                    {editOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center">
-                            <div className="absolute inset-0 bg-black/30" onClick={() => setEditOpen(false)} />
-                            <div className="relative z-10 w-[92vw] max-w-md rounded-2xl border bg-white p-6 shadow-xl flex flex-col items-center">
-                                <h2 className="mb-4 text-xl font-semibold">Edit Profile</h2>
-                                <label className="mb-2 font-medium">Profile Picture</label>
-                                <input type="file" accept="image/*" onChange={handlePicChange} />
-                                {previewUrl && (
-                                    <img src={previewUrl || undefined} alt="Preview" className="w-20 h-20 rounded-full object-cover border-4 border-emerald-200 mt-2" />
-                                )}
-                                <button className="mt-4 rounded-xl bg-emerald-600 px-4 py-2 text-white font-semibold hover:bg-emerald-700" onClick={() => setEditOpen(false)}>Save</button>
                             </div>
                         </div>
                     )}
