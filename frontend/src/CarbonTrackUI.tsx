@@ -41,6 +41,7 @@ const CATEGORIES: LogItem["category"][] = [
 ];
 
 export default function CarbonTrackUI() {
+  const [user, setUser] = useState<any | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Leaderboard" | "Fun Facts">("Dashboard");
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -91,6 +92,21 @@ export default function CarbonTrackUI() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    if (!raw) {
+      setUser(null);
+      return;
+    }
+    try {
+      setUser(JSON.parse(raw));
+    } catch {
+      setUser(null);
+    }
+  }, []);
+  const avatarSrc = user?.avatar_url ? `${API}${user.avatar_url}` : null;
+
 
   async function completeToday() {
     try {
@@ -176,10 +192,24 @@ export default function CarbonTrackUI() {
             </Link>
             <Link
               to="/profile"
-              className="h-8 w-8 rounded-full bg-emerald-600/10 ring-2 ring-emerald-600 grid place-items-center cursor-pointer hover:ring-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300"
               title="Open profile"
               aria-label="Open profile"
-            />
+              className="h-8 w-8 rounded-full flex items-center justify-center cursor-pointer focus:outline-none focus:ring-4 focus:ring-emerald-300"
+            >
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full object-cover border border-emerald-200"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-200">
+                  <span className="text-xl text-emerald-700" role="img" aria-label="profile">
+                    👤
+                  </span>
+                </div>
+              )}
+            </Link>
           </div>
         </div>
       </header>
@@ -834,7 +864,7 @@ function AddLogForm({ onSubmit }: { onSubmit: (log: any) => void }) {
 
 function Leaderboard() {
     const [leaders, setLeaders] = useState<
-        { username: string; avgEmissions: number; rank: number }[]
+        { username: string; avgEmissions: number; rank: number; avatar_url?: string | null }[]
     >([]);
     const [loading, setLoading] = useState(true);
 
@@ -882,7 +912,22 @@ function Leaderboard() {
                             <td className="p-2 text-center font-semibold text-emerald-700">
                                 {u.rank === 1 ? "🥇" : u.rank === 2 ? "🥈" : u.rank === 3 ? "🥉" : u.rank}
                             </td>
-                            <td className="p-2">{u.username}</td>
+                            <td className="p-2">
+                                <div className="flex items-center gap-2">
+                                    {u.avatar_url ? (
+                                        <img
+                                            src={`${API}${u.avatar_url}`}
+                                            alt={u.username}
+                                            className="w-8 h-8 rounded-full object-cover border border-emerald-200"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                            {u.username?.charAt(0) ?? "?"}
+                                        </div>
+                                    )}
+                                    <span>{u.username}</span>
+                                </div>
+                            </td>
                             <td className="p-2 text-right">{fmt(u.avgEmissions)}</td>
                         </tr>
                     ))}

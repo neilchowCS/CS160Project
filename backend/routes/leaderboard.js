@@ -37,7 +37,7 @@ app.get('/', async (req, res) => {
 
     const userIds = leaderboardData.map(e => e._id);
     const users = await User.find({ _id: { $in: userIds } })
-      .select("firstName lastName")
+      .select("firstName lastName avatarUrl")
       .lean();
 
     const result = leaderboardData.map((entry, i) => {
@@ -46,6 +46,7 @@ app.get('/', async (req, res) => {
         rank: i + 1,
         username: user ? `${user.firstName} ${user.lastName}` : "Unknown User",
         avgEmissions: entry.avgEmissions ? Number(entry.avgEmissions.toFixed(2)) : 0,
+        avatar_url: user && user.avatarUrl ? user.avatarUrl : null,  
       };
     });
 
