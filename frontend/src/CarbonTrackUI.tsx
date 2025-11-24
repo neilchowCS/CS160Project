@@ -43,7 +43,7 @@ const CATEGORIES: LogItem["category"][] = [
 export default function CarbonTrackUI() {
   const [user, setUser] = useState<any | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Leaderboard" | "Fun Facts">("Dashboard");
+  const [active, setActive] = useState<"Dashboard" | "Logs" | "Tips & Challenges" | "Recommendations" | "Leaderboard" | "Fun Facts">("Dashboard");
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [query, setQuery] = useState("");
   const [catFilter, setCatFilter] = useState<"All" | LogItem["category"]>("All");
@@ -220,7 +220,7 @@ export default function CarbonTrackUI() {
                     className={`${sidebarOpen ? "block" : "hidden"} md:block border-r bg-white px-4 py-6`}
                 >
                     <nav className="flex flex-col gap-2">
-                        {(["Dashboard", "Logs", "Tips & Challenges", "Leaderboard", "Fun Facts"] as const).map((tab) => (
+                        {(["Dashboard", "Logs", "Tips & Challenges", "Recommendations", "Leaderboard", "Fun Facts"] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActive(tab)}
@@ -437,7 +437,20 @@ export default function CarbonTrackUI() {
                 </ul>
               </div>
             </section>
-          )}
+                  )}
+
+                  {active === "Recommendations" && (
+                      <section className="space-y-6">
+                          <div className="flex items-center justify-between gap-3">
+                              <h1 className="text-2xl font-semibold">Recommendations</h1>
+                          </div>
+
+                          <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                              <Recommendations />
+                          </div>
+                      </section>
+                  )}
+
           {active === "Fun Facts" && (
             <section className="space-y-6">
               <div className="flex items-center justify-between gap-3">
@@ -937,3 +950,106 @@ function Leaderboard() {
     );
 }
 
+function Recommendations() {
+    const [logs, setLogs] = useState<LogItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const NATIONAL_AVERAGES: Record<LogItem["category"], number> = {
+        Transportation: 450,
+        Electricity: 320,
+        "Natural Gas": 250,
+        Other: 0,
+    };
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(`${API}/api/logs`, {
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                });
+                if (!res.ok) throw new Error("Failed to fetch logs");
+                const rows = await res.json();
+                const mapped = rows.map((r: any) => ({
+                    id: r._id,
+                    date: new Date(r.date).toISOString().slice(0, 10),
+                    category: r.category,
+                    notes: r.notes || "",
+                    amount: r.amount == null ? null : Number(r.amount),
+                    transportMode: r.transportMode ?? null,
+                    transportDistance: r.transportDistance ?? null,
+                })) as LogItem[];
+                setLogs(mapped);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, []);
+
+    const totals = useMemo(() => {
+        return CATEGORIES.reduce<Record<string, number>>((acc, c) => {
+            acc[c] = logs
+                .filter((l) => l.category === c)
+                .reduce((s, l) => s + (l.amount ?? 0), 0);
+            return acc;
+        }, {});
+    }, [logs]);
+
+    const aboveAvgCategories = CATEGORIES.filter(
+        (cat) => cat !== "Other" && (totals[cat] || 0) > NATIONAL_AVERAGES[cat]
+    );
+
+    let blurb = "";
+    if (aboveAvgCategories.length === 0) {
+        blurb = "Awesome! Your carbon footprint in all tracked categories is below the national average.";
+    } else {
+        blurb = `You are above the national average in ${aboveAvgCategories
+            .map((c) => c.toLowerCase())
+            .join(", ")}. Consider taking steps to reduce your emissions in these areas.`;
+    }
+
+    if (loading) return <div className="text-sm text-gray-500">Loading recommendations…</div>;
+
+    return (
+        <div className="space-y-4">
+            <h2 className="text-lg font-semibold">How you compare</h2>
+            <p className="text-sm text-gray-600">{blurb}</p>
+
+            {CATEGORIES.map((cat) => {
+                if (cat === "Other") return null; 
+                const userValue = totals[cat] || 0;
+                const national = NATIONAL_AVERAGES[cat];
+                const diff = userValue - national;
+                const percent = national ? ((diff / national) * 100).toFixed(0) : "0";
+
+                let summary = "";
+                if (diff > 0) {
+                    summary = `You're ${percent}% above the national average in ${cat.toLowerCase()}. Consider reducing usage.`;
+                } else if (diff < 0) {
+                    summary = `Great job! You're ${Math.abs(percent)}% below the national average in ${cat.toLowerCase()}.`;
+                } else {
+                    summary = `You're right at the national average in ${cat.toLowerCase()}.`;
+                }
+
+                return (
+                    <div key={cat} className="rounded-2xl border bg-white p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="font-medium">{cat}</div>
+                            <div className="text-sm text-gray-600">{fmt(userValue)} kg CO₂e</div>
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500">{summary}</div>
+                        <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+                            <div
+                                className="h-2 rounded-full bg-emerald-600"
+                                style={{
+                                    width: `${Math.min((userValue / national) * 100, 100)}%`,
+                                }}
+                            ></div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
