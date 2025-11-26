@@ -24,8 +24,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         }
     }, [location.pathname]);
 
-    const avatarSrc =
-        user?.avatar_url ? `${apiBase}${user.avatar_url}` : null;
+    const avatarSrc = user?.avatar_url || null;
 
     return (
         <div className="min-h-screen w-screen bg-gray-50 text-gray-900">

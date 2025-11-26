@@ -105,8 +105,7 @@ export default function CarbonTrackUI() {
       setUser(null);
     }
   }, []);
-  const avatarSrc = user?.avatar_url ? `${API}${user.avatar_url}` : null;
-
+  const avatarSrc = user?.avatar_url || null;
 
   async function completeToday() {
     try {
@@ -929,7 +928,7 @@ function Leaderboard() {
                                 <div className="flex items-center gap-2">
                                     {u.avatar_url ? (
                                         <img
-                                            src={`${API}${u.avatar_url}`}
+                                            src={u.avatar_url}
                                             alt={u.username}
                                             className="w-8 h-8 rounded-full object-cover border border-emerald-200"
                                         />

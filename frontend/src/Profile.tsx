@@ -13,7 +13,7 @@ export default function Profile() {
     const apiBase =
     (import.meta as any).env?.VITE_API_BASE?.replace(/\/+$/, "") || "";
 
-    const avatarSrc = user?.avatar_url ? `${apiBase}${user.avatar_url}` : null;
+    const avatarSrc = user?.avatar_url || null;
 
 
     function openPwModal() {

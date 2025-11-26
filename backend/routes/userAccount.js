@@ -55,44 +55,10 @@ router.post('/update', auth, async (req, res) => {
     user.lastName = last_name;
     user.email = email;
 
-    // If avatar_base64 provided, save file to uploads and set avatarUrl
     if (avatar_base64) {
-      try {
-        console.log('[PROFILE UPDATE] Avatar base64 provided, length:', avatar_base64.length);
-        appendDebug(`Avatar provided, base64 length=${avatar_base64.length}`);
-        // avatar_base64 may be a data URL 'data:image/png;base64,...'
-        const matches = avatar_base64.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
-        let b64 = avatar_base64;
-        let ext = 'png';
-        if (matches) {
-          ext = matches[1].split('/')[1];
-          b64 = matches[2];
-          console.log('[PROFILE UPDATE] Parsed extension:', ext, 'Base64 length:', b64.length);
-          appendDebug(`Parsed extension=${ext} parsed_length=${b64.length}`);
-        } else {
-          console.log('[PROFILE UPDATE] Avatar base64 did not match expected data URL format');
-          appendDebug('Avatar base64 did not match expected data URL format');
-        }
-        const buffer = Buffer.from(b64, 'base64');
-        const fs = require('fs');
-        const path = require('path');
-        const uploadsDir = path.join(__dirname, '..', 'uploads');
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir, { recursive: true });
-          console.log('[PROFILE UPDATE] Created uploads directory');
-          appendDebug('Created uploads directory');
-        }
-        const filename = `${user._id.toString()}-${Date.now()}.${ext}`;
-        const filepath = path.join(uploadsDir, filename);
-        fs.writeFileSync(filepath, buffer);
-        console.log('[PROFILE UPDATE] Saved avatar to:', filepath);
-        appendDebug(`Saved avatar to: ${filepath}`);
-        // set accessible URL path
-        user.avatarUrl = `/uploads/${filename}`;
-      } catch (e) {
-        console.error('[PROFILE UPDATE] Failed to save avatar', e);
-        appendDebug(`Failed to save avatar: ${e && e.message}`);
-      }
+      console.log('[PROFILE UPDATE] Avatar base64 provided, length:', avatar_base64.length);
+      appendDebug(`Avatar provided, base64 length=${avatar_base64.length}`);
+      user.avatarUrl = avatar_base64;
     } else {
       console.log('[PROFILE UPDATE] No avatar_base64 provided');
       appendDebug('No avatar_base64 provided');
