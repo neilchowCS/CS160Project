@@ -172,8 +172,8 @@ export default function CarbonTrackUI() {
               ☰
             </button>
             <div className="flex items-center gap-2">
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold">C</span>
-              <span className="text-lg font-semibold">CarbonTrack</span>
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold">E</span>
+              <span className="text-lg font-semibold">EcoTrackers</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -577,7 +577,7 @@ export default function CarbonTrackUI() {
       {/* Footer */}
       <footer className="mt-10 border-t bg-white/60">
         <div className="px-4 py-6 text-xs text-gray-500">
-          © {new Date().getFullYear()} CarbonTrack • Demo interface
+          © {new Date().getFullYear()} EcoTrackers • Demo interface
         </div>
       </footer>
     </div>

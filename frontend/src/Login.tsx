@@ -47,7 +47,7 @@ export default function Login() {
         <div className="flex min-h-screen w-screen items-center justify-center bg-gray-50">
             <div className="w-[90vw] max-w-md rounded-2xl border bg-white p-6 shadow-sm">
                 <h1 className="mb-6 text-center text-2xl font-semibold text-gray-900">
-                    Sign in to CarbonTrack
+                    Sign in to EcoTrackers
                 </h1>
 
                 {error && (

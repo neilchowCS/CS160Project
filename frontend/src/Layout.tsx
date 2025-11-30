@@ -36,7 +36,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
                             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold">
                                 C
                             </span>
-                            <span className="text-lg font-semibold">CarbonTrack</span>
+                            <span className="text-lg font-semibold">EcoTrackers</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
